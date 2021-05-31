@@ -1,0 +1,32 @@
+name: Build and push
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  buildAndPublish:
+    runs-on: windows-latest
+    env:
+      PackageVersion: 0.1.0.${{ github.run_number }}
+      PackageName: TypeVisitor.0.1.0.${{ github.run_number }}.nupkg
+      SolutionName: TypeVisitor.sln
+    steps:
+    - name: Setup MSBuild Path
+      uses: microsoft/setup-msbuild@v1.0.2
+    - name: Setup NuGet
+      uses: nuget/setup-nuget@v1
+      with:
+        nuget-api-key: ${{ secrets.nuget_apiKey }}
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Restore
+      run: msbuild ${{ env.SolutionName }} -p:Configuration=Release -t:restore
+    - name: Build
+      run: msbuild ${{ env.SolutionName }} -p:Configuration=Release -t:build
+    - name: Pack
+      run: nuget pack TypeVisitor\TypeVisitor.csproj -Version ${{ env.PackageVersion }} -Properties Configuration=Release
+#    - name: Push github
+#      run: nuget push "${{ env.PackageName }}"
+    - name: Push nuget
+      run: nuget push "${{ env.PackageName }}" -Source "https://api.nuget.org/v3/index.json" -ApiKey ${{ secrets.nuget_apiKey }}
