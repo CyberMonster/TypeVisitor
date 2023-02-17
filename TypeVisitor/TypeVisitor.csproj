@@ -1,52 +1,31 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{F48A7A8D-CA1B-4974-A0CE-C2363C3E4D83}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <VersionPrefix>1.0.0</VersionPrefix>
     <RootNamespace>TypeVisitor</RootNamespace>
     <AssemblyName>TypeVisitor</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+
+  <PropertyGroup>
+    <PackageId>TypeVisitor</PackageId>
+    <Authors>ElectronicVault, CyberMonster</Authors>
+    <Company>ElectronicVault</Company>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/CyberMonster/TypeVisitor</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/CyberMonster/TypeVisitor</PackageProjectUrl>
+    <PackageIcon>Icon128x128.png</PackageIcon>
+    <ApplicationIcon>$(ProjectDir)..\Assets\Icon128x128.ico</ApplicationIcon>
+
+    <description>Pakage for iterate classes by reflection</description>
+    <copyright>Copyright © ElectronicVault 2023</copyright>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+
+   <ItemGroup>
+    <None Remove="$(ProjectDir)..\Assets\Icon128x128.png" />
+    <None Remove="$(ProjectDir)..\Assets\Icon128x128.ico" />
+    <None Remove="Icon128x128.ico" />
+    <Resource Include="$(ProjectDir)..\Assets\Icon128x128.png" Pack="True" PackagePath="\" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Converters\ConverterBase.cs" />
-    <Compile Include="Converters\IConverter.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReflectionHelper.cs" />
-    <Compile Include="Mappings\RegistryMapping.cs" />
-    <Compile Include="Mappings\RegistryMappingExtensions.cs" />
-    <Compile Include="TypeVisitorBase.cs" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
