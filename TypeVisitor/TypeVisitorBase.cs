@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -39,27 +40,41 @@ namespace TypeVisitor
             foreach (var member in members)
             {
                 context.RefreshContext(item, member);
-
                 if (IsMemberIgnored(context))
                     continue;
 
                 PrepareMember(context);
                 IsNeedSkipMember(context);
-
-                if (context.MemberTypeCode == TypeCode.Object)
+                (CheckMemberType(context) switch
                 {
-                    var enumerableInterface = context.MemberType.FindInterfaces((x, _) => x.FullName == "System.Collections.IEnumerable", null).FirstOrDefault();
-                    if (enumerableInterface is not null || context.MemberType.IsArray)
-                        arrayReachedAction(context, GetMemberName(context));
-                    else
-                        compositeTypeReachedAction(context, GetMemberName(context));
-                }
-                else if (context.MemberTypeCode != TypeCode.Empty)
-                    simpleTypeReachedAction(context, GetMemberName(context));
+                    -1 => null,
+                    0 => arrayReachedAction,
+                    1 => compositeTypeReachedAction,
+                    2 => simpleTypeReachedAction,
+                })?.Invoke(context, GetMemberName(context));
             }
         }
 
-        protected string GetMemberName(ContextType context)
+        /// <summary>
+        /// Return member type flag. Array = 0; Composite object = 1; Simple object = 2; Other members = -1
+        /// </summary>
+        protected virtual int CheckMemberType(ContextType context)
+        {
+            if (context.MemberTypeCode == TypeCode.Object)
+            {
+                var enumerableInterface = context.MemberType.FindInterfaces((x, _) => x.FullName == "System.Collections.IEnumerable", null).FirstOrDefault();
+                if (enumerableInterface is not null || context.MemberType.IsArray)
+                    return 0;
+                else
+                    return 1;
+            }
+            else if (context.MemberTypeCode != TypeCode.Empty)
+                return 2;
+
+            return -1;
+        }
+
+        protected virtual string GetMemberName(ContextType context)
             => context.TypeMapping.AliasesCollection.FirstOrDefault(x => SelectorBasedDefinition.CollisionPredicate(x, context.ItemType, context.Member, context.MemberType))?.Alias
                 ?? TypeMapping.GetGlobalMapping()?.AliasesCollection.FirstOrDefault(x => x.Selector.IsMatch(context.Member.Name))?.Alias
                 ?? context.Member.Name;
@@ -110,7 +125,7 @@ namespace TypeVisitor
                     break;
                 default:
                     throw new NotSupportedException($"Member type {memberInfo.MemberType} is not supported");
-            };
+            }
         }
 
         /// <summary>
@@ -130,6 +145,7 @@ namespace TypeVisitor
         protected abstract bool IsNeedSkipMember(ContextType context);
     }
 
+    [DebuggerDisplay("Name = {MemberType.Name} TypeCode = {MemberTypeCode}")]
     public class VisitorContext
     {
         public TypeMapping TypeMapping { get; set; }

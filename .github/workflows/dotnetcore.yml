@@ -6,27 +6,30 @@ on:
 
 jobs:
   buildAndPublish:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     env:
       PackageVersion: 0.1.0.${{ github.run_number }}
       PackageName: TypeVisitor.0.1.0.${{ github.run_number }}.nupkg
-      SolutionName: TypeVisitor.sln
+      PackagePath: ./bin/release/packs
     steps:
-    - name: Setup MSBuild Path
-      uses: microsoft/setup-msbuild@v1.0.2
-    - name: Setup NuGet
-      uses: nuget/setup-nuget@v1
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
       with:
-        nuget-api-key: ${{ secrets.nuget_apiKey }}
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Restore
-      run: msbuild ${{ env.SolutionName }} -p:Configuration=Release -t:restore
-    - name: Build
-      run: msbuild ${{ env.SolutionName }} -p:Configuration=Release -t:build
-    - name: Pack
-      run: nuget pack TypeVisitor\TypeVisitor.csproj -Version ${{ env.PackageVersion }} -Properties Configuration=Release
-#    - name: Push github
-#      run: nuget push "${{ env.PackageName }}"
-    - name: Push nuget
-      run: nuget push "${{ env.PackageName }}" -Source "https://api.nuget.org/v3/index.json" -ApiKey ${{ secrets.nuget_apiKey }}
+        dotnet-version: 7.0.100
+        source-url: https://nuget.pkg.github.com/CyberMonster/index.json
+      env:
+        NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: build
+      run: dotnet build --configuration Release -p:Version=${{ env.PackageVersion }}
+    - name: build package
+      run: dotnet pack --configuration Release --output ${{ env.PackagePath }} -p:Version=${{ env.PackageVersion }}
+    - name: upload
+      uses: actions/upload-artifact@v1
+      with:
+        name: art-${{ env.PackageVersion }}
+        path: ${{ env.PackagePath }}/${{ env.PackageName }}
+    - name: push github
+      run: dotnet nuget push "${{ env.PackagePath }}/${{ env.PackageName }}" --skip-duplicate
+    - name: push nuget
+      run: dotnet nuget push "${{ env.PackagePath }}/${{ env.PackageName }}" --source "https://api.nuget.org/v3/index.json" --api-key ${{secrets.nuget_apiKey}} --skip-duplicate
